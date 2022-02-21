@@ -3,6 +3,8 @@ package com.basics.java.loan.controller;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +32,8 @@ import com.basics.java.loan.bean.LoginModel;
 import com.basics.java.loan.bean.Otp;
 import com.basics.java.loan.bean.UserModel;
 import com.basics.java.loan.bean.profile;
+import com.basics.java.loan.bean.reason;
+import com.basics.java.loan.bean.repayment;
 import com.basics.java.loan.service.Service;
 
 //@CrossOrigin(origins = "http://localhost:8090")
@@ -125,7 +129,14 @@ public class Controller {
 	public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file) {
 		String message = "";
 		try {
-			serve.store(file);
+			
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy,HH-mm-ss");
+			   LocalDateTime now = LocalDateTime.now();
+			   String currentDate=dtf.format(now);
+			   System.out.println(currentDate);
+			String newFileName="("+currentDate+")"+file.getOriginalFilename();
+			
+			serve.store(file ,newFileName);
 			String realname=file.getOriginalFilename();
 
 			String[] words=realname.split("\\.");
@@ -133,11 +144,11 @@ public class Controller {
 			System.out.println("format is "+value);
 			String sql="insert into documentmodel(documentType,documentAddress) values(:documentType,:documentAddress)";
 			SqlParameterSource parameterSource=new MapSqlParameterSource("documentType",value)
-					.addValue("documentAddress", file.getOriginalFilename());
+					.addValue("documentAddress", newFileName);
 			jdbcTemplate.update(sql, parameterSource);
 			
 			String sql1="select * from documentmodel where documentAddress=:documentAddress";
-			SqlParameterSource parameterSource2=new MapSqlParameterSource("documentAddress",file.getOriginalFilename());
+			SqlParameterSource parameterSource2=new MapSqlParameterSource("documentAddress",newFileName);
 			List<DocumentModel> list=jdbcTemplate.query(sql1, parameterSource2,new DocumentModelMapper());
 			int docId=0;
 			if(!list.isEmpty())
@@ -199,7 +210,14 @@ public class Controller {
 	public ResponseEntity<String> handleFileEditUpload(@RequestParam("file") MultipartFile file, @PathVariable("documentId") String documentId) {
 		String message = "";
 		try {
-			serve.store(file);
+			
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy,HH-mm-ss");
+			   LocalDateTime now = LocalDateTime.now();
+			   String currentDate=dtf.format(now);
+			   System.out.println(currentDate);
+			String newFileName="("+currentDate+")"+file.getOriginalFilename();
+			
+			serve.store(file,newFileName);
 			
 			String realname=file.getOriginalFilename();
 			String[] words=realname.split("\\.");
@@ -240,7 +258,7 @@ public class Controller {
 			String sql="update documentmodel set documentType=:documentType, documentAddress=:documentAddress where documentId=:documentId";
 			
 			SqlParameterSource parameterSource=new MapSqlParameterSource("documentType",value)
-					.addValue("documentAddress", file.getOriginalFilename()).addValue("documentId", Integer.parseInt(documentId));
+					.addValue("documentAddress", newFileName).addValue("documentId", Integer.parseInt(documentId));
 			
 			jdbcTemplate.update(sql, parameterSource);
 			
@@ -270,7 +288,14 @@ public class Controller {
 	public ResponseEntity<String> handleFileAddUpload(@RequestParam("file") MultipartFile file, @PathVariable("loanId") String loanId, @PathVariable("userId") String userId) {
 		String message = "";
 		try {
-			serve.store(file);
+			
+			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy,HH-mm-ss");
+			   LocalDateTime now = LocalDateTime.now();
+			   String currentDate=dtf.format(now);
+			   System.out.println(currentDate);
+			String newFileName="("+currentDate+")"+file.getOriginalFilename();
+			
+			serve.store(file, newFileName);
 			
 			String realname=file.getOriginalFilename();
 			String[] words=realname.split("\\.");
@@ -279,11 +304,11 @@ public class Controller {
 			
 			String sql="insert into documentmodel(documentType,documentAddress) values(:documentType,:documentAddress)";
 			SqlParameterSource parameterSource=new MapSqlParameterSource("documentType",value)
-					.addValue("documentAddress", file.getOriginalFilename());
+					.addValue("documentAddress", newFileName);
 			jdbcTemplate.update(sql, parameterSource);
 			
 			String sql1="select * from documentmodel where documentAddress=:documentAddress";
-			SqlParameterSource parameterSource2=new MapSqlParameterSource("documentAddress",file.getOriginalFilename());
+			SqlParameterSource parameterSource2=new MapSqlParameterSource("documentAddress",newFileName);
 			List<DocumentModel> list=jdbcTemplate.query(sql1, parameterSource2,new DocumentModelMapper());
 			int docId=0;
 			if(!list.isEmpty())
@@ -371,6 +396,66 @@ public class Controller {
 	{
 		return serve.getAllRequest();
 	}
+	
+	@RequestMapping("/admin/deleteRequest/{requestId}")
+	void deleteRequest(@PathVariable("requestId") String requestId)
+	{
+		serve.deleteRequest(requestId);
+	}
+	
+	@RequestMapping("/admin/addRequest/{requestId}")
+	void addRequest(@PathVariable("requestId") String requestId)
+	{
+		serve.addRequest(requestId);
+	}
+	
+	@RequestMapping(method = RequestMethod.POST , value="/admin/addReason")
+	void addReason(@RequestBody reason pro)
+	{
+		serve.addReason(pro);
+	}
+	
+	@RequestMapping("/admin/getAllCheckedLoans")
+	List<LoanApplicantModel> getAllCheckedLoans()
+	{
+		return serve.getAllCheckedLoans();
+	}
+	
+	@RequestMapping("/getAllReason")
+	List<reason> getAllReason()
+	{
+		return serve.getAllReason();
+	}
+	
+	@RequestMapping("/getAllUser")
+	List<UserModel> getAllUser()
+	{
+		return serve.getAllUser();
+	}
+	
+	
+	@RequestMapping("admin/generateSchedule/{loanId}")
+	void generateSchedule(@PathVariable("loanId") String loanId)
+	{
+		serve.generateSchedule(loanId);
+	}
+	
+	@RequestMapping("getSchedule/{loanId}")
+	List<repayment> getSchedule(@PathVariable("loanId") String loanId)
+	{
+		return serve.getSchedule(loanId);
+	}
+	
+	@RequestMapping("getThisLoan/{loanId}")
+	List<LoanApplicantModel> getThisLoan(@PathVariable("loanId") String loanId)
+	{
+		return serve.getThisLoan(loanId);
+	}
+	
+	
+	
+	
+	
 	
 	
 	

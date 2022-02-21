@@ -3,6 +3,8 @@ package com.basics.java.loan.service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ import com.basics.java.loan.bean.LoanDetails;
 import com.basics.java.loan.bean.LoginModel;
 import com.basics.java.loan.bean.UserModel;
 import com.basics.java.loan.bean.profile;
+import com.basics.java.loan.bean.reason;
+import com.basics.java.loan.bean.repayment;
 import com.basics.java.loan.repository.Repository;
 
 @org.springframework.stereotype.Service
@@ -83,13 +87,19 @@ public class Service {
 		
 	}
 
-	public void store(MultipartFile file) {
+	public void store(MultipartFile file , String newFileName) {
 		
 		try {
 			System.out.println(file.getOriginalFilename());
+			
+//			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy,HH-mm-ss");
+//			   LocalDateTime now = LocalDateTime.now();
+//			   String currentDate=dtf.format(now);
+//			   System.out.println(currentDate);
+//			String newFileName="("+currentDate+")"+file.getOriginalFilename();
 
-			System.out.println(rootLocation.toUri() + file.getOriginalFilename());
-			Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
+			System.out.println(rootLocation.toUri() + newFileName);
+			Files.copy(file.getInputStream(), this.rootLocation.resolve(newFileName));
 
 			System.out.println("this is from controller class..");
 //			byte[] bytes = file.getBytes();
@@ -184,5 +194,55 @@ public class Service {
 	public List<AdminModel> getAllRequest() {
 		// TODO Auto-generated method stub
 		return rep.getAllRequest();
+	}
+
+	public void deleteRequest(String requestId) {
+		// TODO Auto-generated method stub
+		rep.deleteRequest(requestId);
+		
+	}
+
+	public void addRequest(String requestId) {
+		// TODO Auto-generated method stub
+		rep.addRequest(requestId);
+		
+	}
+
+	public void addReason(reason pro) {
+		// TODO Auto-generated method stub
+		
+		rep.addReason(pro);
+		
+	}
+
+	public List<LoanApplicantModel> getAllCheckedLoans() {
+		// TODO Auto-generated method stub
+		return rep.getAllCheckedLoans();
+	}
+
+	public List<reason> getAllReason() {
+		// TODO Auto-generated method stub
+		return rep.getAllReason();
+	}
+
+	public List<UserModel> getAllUser() {
+		// TODO Auto-generated method stub
+		return rep.getAllUser();
+	}
+
+	public void generateSchedule(String loanId) {
+		// TODO Auto-generated method stub
+		rep.generateSchedule(loanId);
+		
+	}
+
+	public List<repayment> getSchedule(String loanId) {
+		// TODO Auto-generated method stub
+		return rep.getSchedule(loanId);
+	}
+
+	public List<LoanApplicantModel> getThisLoan(String loanId) {
+		// TODO Auto-generated method stub
+		return rep.getThisLoan(loanId);
 	}
 }

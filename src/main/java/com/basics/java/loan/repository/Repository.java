@@ -3,7 +3,10 @@ package com.basics.java.loan.repository;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,18 +17,20 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
+//import com.basics.java.loan.controller.Controller.DocumentModelMapper;
+import com.basics.java.loan.DateCheck;
+import com.basics.java.loan.passwordEncryption;
 import com.basics.java.loan.bean.AdminModel;
 import com.basics.java.loan.bean.DocumentModel;
 import com.basics.java.loan.bean.LoanApplicantModel;
 import com.basics.java.loan.bean.LoanDetails;
 import com.basics.java.loan.bean.LoginModel;
 import com.basics.java.loan.bean.MapModel;
+import com.basics.java.loan.bean.Otp;
 import com.basics.java.loan.bean.UserModel;
 import com.basics.java.loan.bean.profile;
-//import com.basics.java.loan.controller.Controller.DocumentModelMapper;
-import com.basics.java.loan.DateCheck;
-import com.basics.java.loan.passwordEncryption;
-import com.basics.java.loan.bean.Otp;
+import com.basics.java.loan.bean.reason;
+import com.basics.java.loan.bean.repayment;
 
 @org.springframework.stereotype.Repository
 public class Repository {
@@ -107,6 +112,38 @@ public class Repository {
 		public profile mapRow(ResultSet rs, int rowNum) throws SQLException {
 			profile pro = new profile(rs.getInt("profileId"), rs.getInt("userId"), rs.getString("name"), rs.getString("mobile"), rs.getString("email"),rs.getString("address"));
 			return pro;
+		}
+	}
+	
+	class RepaymentMapper implements RowMapper<repayment> {
+		@Override
+		public repayment mapRow(ResultSet rs, int rowNum) throws SQLException {
+			repayment repay = new repayment(rs.getInt("loanId"), rs.getInt("installmentNo"), rs.getString("emi"), rs.getString("fine"), rs.getString("total"),rs.getString("amountpaid"),
+					rs.getString("dueDate"),rs.getString("paidDate"));
+			return repay;
+		}
+	}
+	
+	class ReasonMapper implements RowMapper<reason> {
+		@Override
+		public reason mapRow(ResultSet rs, int rowNum) throws SQLException {
+			
+			reason rea=null;
+			
+			String sql="select * from usermodel";
+			List<UserModel> list=jdbcTemplate.query(sql, new UserModelMapper());
+			for(UserModel userModel: list)
+			{
+				if(userModel.getUserId()==rs.getInt("adminId"))
+				{
+					 rea = new reason(rs.getInt("loanId"), rs.getString("reason"), rs.getInt("adminId"), rs.getString("date"),userModel.getEmail());
+					
+				}
+			}
+			
+			return rea;
+			
+			
 		}
 	}
 	
@@ -737,6 +774,189 @@ public class Repository {
 		
 		return list;
 	}
+
+	public void deleteRequest(String requestId) {
+		String sql="delete from requestadmin where requestId=:requestId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("requestId",Integer.parseInt(requestId));
+		jdbcTemplate.update(sql, parameterSource);
+		
+	}
+
+	public void addRequest(String requestId) {
+	
+		String sql="select * from requestadmin where requestId=:requestId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("requestId",Integer.parseInt(requestId));
+		List<AdminModel> lists=jdbcTemplate.query(sql, parameterSource, new AdminModelMapper());
+		String email="";
+		String password="";
+		String mobile="";
+		String userRole="";
+		for(AdminModel adminModel: lists)
+		{
+			email= adminModel.getEmail();
+			password=adminModel.getPassword();
+			mobile=adminModel.getMobileNumber();
+			userRole=adminModel.getUserRole();
+		}
+		
+		String sql2="insert into usermodel(email,password,mobile,userRole) values(:email,:password,:mobile,:userRole)";
+		SqlParameterSource parameterSource2=new MapSqlParameterSource("email",email)
+				.addValue("password", password).addValue("mobile", mobile).addValue("userRole", userRole);
+		jdbcTemplate.update(sql2, parameterSource2);
+		
+		String sql3="delete from requestadmin where requestId=:requestId";
+		jdbcTemplate.update(sql3, parameterSource);
+		
+		
+		
+	}
+
+	public void addReason(reason pro) {
+		
+		String sql="insert into reason(loanId,reason,adminId) values(:loanId,:reason,:adminId)";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("loanId",pro.getLoanId())
+				.addValue("reason", pro.getReason()).addValue("adminId", pro.getAdminId());
+		jdbcTemplate.update(sql, parameterSource);
+		
+		String sql2="update loanmodel set status='Rejected' where loanId=:loanId";
+		SqlParameterSource parameterSource2=new MapSqlParameterSource("loanId",pro.getLoanId());
+		jdbcTemplate.update(sql2, parameterSource2);
+		
+	}
+
+	public List<LoanApplicantModel> getAllCheckedLoans() {
+		
+		String sql="select * from loanmodel where status!='In Process'";
+		List<LoanApplicantModel> list=jdbcTemplate.query(sql, new LoanModelMapper());
+		
+				
+		return list;
+		
+	}
+
+	public List<reason> getAllReason() {
+		
+		String sql="select * from reason";
+		List<reason> list=jdbcTemplate.query(sql, new ReasonMapper());
+		
+		return list;
+	}
+
+	public List<UserModel> getAllUser() {
+	
+		String sql="select * from usermodel";
+		List<UserModel> list=jdbcTemplate.query(sql, new UserModelMapper());
+		return list;
+	}
+	
+	static float calculateEMI(int amount,float rate,int months)
+	{
+		float emi=0;
+		emi=(float) (amount*rate*Math.pow((1+rate), months)/(Math.pow((1+rate), months)-1));
+		return emi;
+	}
+
+	public void generateSchedule(String loanId) {
+		
+		String sql="select * from loanmodel where loanId=:loanId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("loanId",Integer.parseInt(loanId));
+		List<LoanApplicantModel> list=jdbcTemplate.query(sql, parameterSource,new LoanModelMapper());
+		String amount="";
+		String months="";
+		float rate=(float) (0.08/12);
+		
+		for(LoanApplicantModel applicantModel: list)
+		{
+			amount=applicantModel.getLoanAmountRequired();
+			months=applicantModel.getLoanRepaymentMonths();
+		}
+		
+		float emi=calculateEMI(Integer.parseInt(amount), rate, Integer.parseInt(months));
+		System.out.println("EMI is Rs "+emi);
+		String EMI=String.valueOf(emi);
+		System.out.println(EMI);
+		
+		String sql3="update loanmodel set status='Approved' where loanId=:loanId";
+		jdbcTemplate.update(sql3, parameterSource);
+		
+		int Months=Integer.parseInt(months);		
+		 Calendar calendar = Calendar.getInstance(); 
+		 calendar.add(Calendar.MONTH, 1);
+		 SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+		 for(int i=1;i<=Months;i++)
+		 {
+			 
+			 String dateWithoutTime = sdf.format(calendar.getTime());
+			 String sql2="insert into repayment(loanId,installmentNo,emi,fine,total,dueDate) values(:loanId,:installmentNo,:emi,:fine,:total,:dueDate)";
+			 SqlParameterSource parameterSource2=new MapSqlParameterSource("loanId",Integer.parseInt(loanId))
+					 .addValue("installmentNo", i).addValue("emi", EMI).addValue("fine", "0").addValue("total", EMI)
+					 .addValue("dueDate", dateWithoutTime);
+				System.out.println(dateWithoutTime);
+				jdbcTemplate.update(sql2, parameterSource2);
+				
+				 calendar.add(Calendar.MONTH, 1);
+				
+		 }
+		
+	}
+
+	public List<repayment> getSchedule(String loanId) {
+		
+		String sql="select * from repayment where loanId=:loanId order by installmentNo";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("loanId",Integer.parseInt(loanId));
+		List<repayment> list=jdbcTemplate.query(sql, parameterSource,new RepaymentMapper());
+		
+		for(repayment repay: list)
+		{
+			System.out.println(dayDiff(repay.getDueDate(), "21-03-2022"));
+		}
+		
+		return list;
+		
+	}
+
+	public List<LoanApplicantModel> getThisLoan(String loanId) {
+		
+		String sql="select * from loanmodel where loanId=:loanId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("loanId",Integer.parseInt(loanId));
+		List<LoanApplicantModel> list=jdbcTemplate.query(sql, parameterSource, new LoanModelMapper());
+		
+		return list;
+	}
+	
+	public int dayDiff(String date1, String date2)
+	{
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		
+		Date d1=null;
+		Date d2=null;
+		
+		try {
+			d1 = format.parse(date1);
+			d2 = format.parse(date2);
+		}
+		 catch (java.text.ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		long diff = d2.getTime() - d1.getTime();
+		
+		int daysDiff = (int) (diff / (1000 * 60 * 60* 24));
+		
+		return daysDiff;
+		
+	}
+	
+	static float fineEMI(int diff, float emi)
+	{
+		float rate=(float) (0.04/30);
+		float extra=(float) (rate*emi*diff);
+	//	float newBalance=balance+extra;
+		return emi+extra;
+	}
+	
+	
 	
 	
 	
