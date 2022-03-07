@@ -40,6 +40,13 @@ export class LoginComponent implements OnInit {
       });
 
     }
+
+    let addUsersss = this.httpObj.get(this.url + "updateSchedule");
+       addUsersss.subscribe((response)=>{
+       console.log(response);
+    
+
+      });
    
     
   }

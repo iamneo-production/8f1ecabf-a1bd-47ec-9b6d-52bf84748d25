@@ -46,6 +46,13 @@ export class CustomerapplyloanComponent implements OnInit {
 
     this.fileInfos = this.uploadService.getFiles();
 
+    let addUsersss = this.httpObj.get(this.url + "updateSchedule");
+       addUsersss.subscribe((response)=>{
+       console.log(response);
+    
+
+      });
+
     }
 
   }

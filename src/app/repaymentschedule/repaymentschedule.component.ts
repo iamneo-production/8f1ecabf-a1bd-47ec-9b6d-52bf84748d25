@@ -24,6 +24,9 @@ export class RepaymentscheduleComponent implements OnInit {
   loanArray:any;
   recoveryAmount:any=0;
   totalInstallment:any;
+  repayLength:any;
+  todayDate:String="";
+  totalAmountPaid:any;
   // dateArray:any=[];
   // paidDateArray:any=[];
 
@@ -59,13 +62,32 @@ export class RepaymentscheduleComponent implements OnInit {
         
         this.repayArray=response;
 
+         this.todayDate = new Date().toISOString().slice(0, 10);
+        console.log(this.todayDate);
+
+        this.repayLength=this.repayArray.length;
+
+        if(this.repayLength==0)
+        {
+          this.recoveryAmount=0;
+        }
+
+        this.recoveryAmount=0;
+        this.totalAmountPaid=0;
+
         this.totalInstallment=this.repayArray.length;
 
         for(var i=0;i<this.repayArray.length;i++)
         {
-          this.recoveryAmount+=+(this.repayArray[i].emi);
+
+          this.totalAmountPaid+=+(this.repayArray[i].amountPaid);
+          if(this.repayArray[i].amountPaid!='0.0')
+          {
+          this.recoveryAmount+=+(this.repayArray[i].total);
+          }
+          
         }
-        this.recoveryAmount=this.recoveryAmount.toFixed(2);
+        this.recoveryAmount=Math.round(this.recoveryAmount);
 
         let addUserss = this.httpObj.get(this.url + "getThisLoan/"+this.loanId);
         addUserss.subscribe((response)=>{
@@ -113,31 +135,28 @@ export class RepaymentscheduleComponent implements OnInit {
    $('#editRepay').click();
 
     //  DueDate
-     var date_string=this.rowArray[0].dueDate;
+    //  var date_string=this.rowArray[0].dueDate;
    
-     setTimeout(() => {
-      this.rowArray[0].dueDate=this.reverseString(date_string);
-     }, 240);
+    //  setTimeout(() => {
+    //   this.rowArray[0].dueDate=this.reverseString(date_string);
+    //  }, 240);
       
 
-    console.log("Correct date is "+this.reverseString(date_string));
+    // console.log("Correct date is "+this.reverseString(date_string));
     
 
     //  PaidDate
-     var date_strings=this.rowArray[0].paidDate;
-     if(date_strings!=null)
-     {
+    //  var date_strings=this.rowArray[0].paidDate;
+    //  if(date_strings!=null)
+    //  {
      
-      setTimeout(() => {
-        this.rowArray[0].paidDate=this.reverseString(date_strings);
-       }, 240);
+    //   setTimeout(() => {
+    //     this.rowArray[0].paidDate=this.reverseString(date_strings);
+    //    }, 240);
      
-     }
+    //  }
      
-     
-     
-     
-     $('#editRepay').click();
+       
      
    }
 
@@ -172,5 +191,55 @@ export class RepaymentscheduleComponent implements OnInit {
 
 
    }
+
+   deleteSchedule()
+   {
+     $('#deleteLaunch').click();
+   }
+
+   deleteRepayment()
+   {
+    let addUserss = this.httpObj.delete(this.url + "admin/deleteRepaymentSchedule/"+this.loanId);
+    addUserss.subscribe((response)=>{
+      console.log(response);
+      
+      $('#deletethisloanfast').click();
+
+      this.router.navigate(["adminappliedloan"]);
+     
+     
+    });
+   }
+
+   editThisSchedule(param: any)
+   {
+     console.log(param.value);
+
+     var editArray={
+      "loanId": this.loanId,
+       "installmentNo": this.rowArray[0].installmentNo,
+        "emi": this.rowArray[0].emi,
+       "fine": this.rowArray[0].fine,
+       "total": this.rowArray[0].total,
+       "amountPaid":this.rowArray[0].total,
+       "dueDate": this.rowArray[0].dueDate,
+       "paidDate":this.reverseString(param.value.paidDate)
+     }
+
+     console.log(editArray);
+
+     let addUserss = this.httpObj.post(this.url + "admin/editRepaymentSchedule/"+this.loanId,editArray);
+     addUserss.subscribe((response)=>{
+       console.log(response);
+       this.ngOnInit();
+       $('#closethis').click();
+      
+      
+     });
+     
+     
+   }
+
+
 
 }

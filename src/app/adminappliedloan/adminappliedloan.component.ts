@@ -58,6 +58,15 @@ export class AdminappliedloanComponent implements OnInit {
     addUserss.subscribe((response)=>{
     console.log(response);
     this.documentArray=response;
+
+
+    let addUsersss = this.httpObj.get(this.url + "updateSchedule");
+       addUsersss.subscribe((response)=>{
+       console.log(response);
+    
+
+      });
+
  
     }); 
 
@@ -216,13 +225,13 @@ export class AdminappliedloanComponent implements OnInit {
      var rate=(0.08)/12;
 
     var emi=(amount*rate*Math.pow((1+rate), months)/(Math.pow((1+rate), months)-1));
-    var actualamount=(emi*months).toFixed(2);
+    var actualamount=Math.round(emi*months);
 
      this.giveAmount=(0.50*salary)*months;
 
 
 
-     alert('Applicable for a maximum amount of Rs '+this.giveAmount+' and total recovery amount including interest is Rs '+actualamount)
+     alert('Applicable for a maximum amount of Rs '+this.giveAmount+' and total payable amount including interest is Rs '+actualamount)
      
     //  $('#showAvailable'+id).fadeIn();
     //  setTimeout(() => {

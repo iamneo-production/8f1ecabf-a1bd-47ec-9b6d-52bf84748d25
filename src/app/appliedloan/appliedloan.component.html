@@ -12,3 +12,57 @@
     <button  class="btn" id="newButton" style="background-color: darkslateblue;color: white;border-radius: 0.25rem;margin: 0.25rem 0.125rem; width: 20%; border-radius: 12px;" (click)="backtoLoan()">Apply for new Loan</button>
 
 </div>
+
+<button type="button" id="onLaunch" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal" style="display: none;">
+    Launch demo modal
+  </button>
+  
+  <!-- Modal HTML -->
+  <div id="myModal" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+      <div class="modal-content">
+        <div class="modal-header flex-column" style="margin-top: -6%;">
+           
+            <h4>Rate Your Experience</h4>
+            
+            
+
+            <div class="rate" style="margin-top: 3%;">
+                <input type="radio" id="star5" name="rate" value="5" (click)="countStar(5)" />
+                <label for="star5" title="text">5 stars</label>
+                <input type="radio" id="star4" name="rate" value="4" (click)="countStar(4)" />
+                <label for="star4" title="text">4 stars</label>
+                <input type="radio" id="star3" name="rate" value="3" (click)="countStar(3)" />
+                <label for="star3" title="text">3 stars</label>
+                <input type="radio" id="star2" name="rate" value="2" (click)="countStar(2)" />
+                <label for="star2" title="text">2 stars</label>
+                <input type="radio" id="star1" name="rate" value="1" (click)="countStar(1)" />
+                <label for="star1" title="text">1 star</label>
+              </div>
+            
+          <!-- <h5 class="modal-title w-100">How was your Experience?</h5>	 -->
+                 
+        </div>
+        <div class="modal-body">
+          <!-- <p>Do you really want to delete this Repayment Schedule? This process cannot be undone.</p> -->
+         
+          <div class="mb-3">
+            <label for="name" class="form-label" style="margin-right: 55%;">*Share your experience</label>
+            <textarea class="form-control" id="name" rows="2" [formControl]="name" ></textarea>
+          </div>
+
+          <div style="height: 16px;margin-top: -4%;">
+            <div *ngIf="name.invalid && (name.touched || name.dirty)">
+                <p *ngIf="name.errors?.['required']" style="color: red; text-align: left;">*Required</p>
+            </div>
+          </div>
+
+
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-primary" id="deletethisloanfast" data-bs-dismiss="modal">Later</button>
+          <button type="button" class="btn btn-success" [disabled]="!name.valid" (click)="onSubmit()" >Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>   
