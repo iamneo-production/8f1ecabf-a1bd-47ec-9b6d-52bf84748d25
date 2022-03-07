@@ -15,6 +15,7 @@ import com.basics.java.loan.bean.DocumentModel;
 import com.basics.java.loan.bean.LoanApplicantModel;
 import com.basics.java.loan.bean.LoanDetails;
 import com.basics.java.loan.bean.LoginModel;
+import com.basics.java.loan.bean.Review;
 import com.basics.java.loan.bean.UserModel;
 import com.basics.java.loan.bean.profile;
 import com.basics.java.loan.bean.reason;
@@ -244,5 +245,58 @@ public class Service {
 	public List<LoanApplicantModel> getThisLoan(String loanId) {
 		// TODO Auto-generated method stub
 		return rep.getThisLoan(loanId);
+	}
+
+	public void deleteSchedule(String loanId) {
+		// TODO Auto-generated method stub
+		rep.deleteSchedule(loanId);
+		
+	}
+
+	public void editSchedule(repayment repay, String loanId) {
+		// TODO Auto-generated method stub
+		rep.editSchedule(repay,loanId);
+	}
+
+	public void updateSchedule() {
+		// TODO Auto-generated method stub
+		rep.updateSchedule();
+		
+	}
+
+	public void addReview(Review review) {
+		// TODO Auto-generated method stub
+		
+		rep.addReview(review);
+		
+	}
+
+	public List<Review> getReview(String userId) {
+		// TODO Auto-generated method stub
+		return rep.getReview(userId);
+	}
+
+	public void editReview(Review review) {
+		// TODO Auto-generated method stub
+		rep.editReview(review);
+		
+	}
+
+	public void deleteReview(String reviewId) {
+		// TODO Auto-generated method stub
+		
+		rep.deleteReview(reviewId);
+		
+	}
+
+	public List<Review> getAllReview() {
+		// TODO Auto-generated method stub
+		return rep.getAllReview();
+	}
+
+	public void deleteThisUser(String userId) {
+		// TODO Auto-generated method stub
+		rep.deleteThisUser(userId);
+		
 	}
 }

@@ -30,6 +30,7 @@ import com.basics.java.loan.bean.LoanApplicantModel;
 import com.basics.java.loan.bean.LoanDetails;
 import com.basics.java.loan.bean.LoginModel;
 import com.basics.java.loan.bean.Otp;
+import com.basics.java.loan.bean.Review;
 import com.basics.java.loan.bean.UserModel;
 import com.basics.java.loan.bean.profile;
 import com.basics.java.loan.bean.reason;
@@ -434,23 +435,82 @@ public class Controller {
 	}
 	
 	
-	@RequestMapping("admin/generateSchedule/{loanId}")
+	@RequestMapping("/admin/generateSchedule/{loanId}")
 	void generateSchedule(@PathVariable("loanId") String loanId)
 	{
 		serve.generateSchedule(loanId);
 	}
 	
-	@RequestMapping("getSchedule/{loanId}")
+	@RequestMapping("/getSchedule/{loanId}")
 	List<repayment> getSchedule(@PathVariable("loanId") String loanId)
 	{
 		return serve.getSchedule(loanId);
 	}
 	
-	@RequestMapping("getThisLoan/{loanId}")
+	@RequestMapping("/getThisLoan/{loanId}")
 	List<LoanApplicantModel> getThisLoan(@PathVariable("loanId") String loanId)
 	{
 		return serve.getThisLoan(loanId);
 	}
+	
+	@RequestMapping(method = RequestMethod.DELETE , value="/admin/deleteRepaymentSchedule/{loanId}")
+	void deleteSchedule(@PathVariable("loanId") String loanId)
+	{
+		serve.deleteSchedule(loanId);
+	}
+	
+	@RequestMapping(method = RequestMethod.POST , value="/admin/editRepaymentSchedule/{loanId}")
+	void editSchedule(@RequestBody repayment repay, @PathVariable("loanId") String loanId)
+	{
+		serve.editSchedule(repay,loanId);
+	}
+	
+	@RequestMapping("/updateSchedule")
+	void updateSchedule()
+	{
+		serve.updateSchedule();
+	}
+	
+	
+	@RequestMapping(method = RequestMethod.POST , value="/user/addReview")
+	void addReview(@RequestBody Review review)
+	{
+		serve.addReview(review);
+	}
+	
+	@RequestMapping("/user/getReview/{userId}")
+	List<Review> getReview(@PathVariable("userId") String userId)
+	{
+		return serve.getReview(userId);
+	}
+	
+	
+	@RequestMapping(method = RequestMethod.PUT , value="/user/editReview")
+	void editReview(@RequestBody Review review)
+	{
+		serve.editReview(review);
+	}
+	
+	@RequestMapping(method = RequestMethod.DELETE , value="/user/deleteReview/{reviewId}")
+	void deleteReview(@PathVariable("reviewId") String reviewId)
+	{
+		serve.deleteReview(reviewId);
+	}
+	
+	@RequestMapping("/getAllReview")
+	List<Review> getAllReview()
+	{
+		return serve.getAllReview();
+	}
+	
+	@RequestMapping(method = RequestMethod.DELETE , value="/admin/deleteThisUser/{userId}")
+	void deleteThisUser(@PathVariable("userId") String userId)
+	{
+		System.out.println("Reached Controller");
+		serve.deleteThisUser(userId);
+	}
+	
+	
 	
 	
 	

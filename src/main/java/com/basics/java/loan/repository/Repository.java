@@ -27,6 +27,7 @@ import com.basics.java.loan.bean.LoanDetails;
 import com.basics.java.loan.bean.LoginModel;
 import com.basics.java.loan.bean.MapModel;
 import com.basics.java.loan.bean.Otp;
+import com.basics.java.loan.bean.Review;
 import com.basics.java.loan.bean.UserModel;
 import com.basics.java.loan.bean.profile;
 import com.basics.java.loan.bean.reason;
@@ -40,6 +41,7 @@ public class Repository {
 	
 	@Autowired
 	JavaMailSender javaMailSender;
+
 
 	public void saveUser(UserModel user) {
 		// TODO Auto-generated method stub
@@ -124,22 +126,22 @@ public class Repository {
 		}
 	}
 	
+	class ReviewMapper implements RowMapper<Review> {
+		@Override
+		public Review mapRow(ResultSet rs, int rowNum) throws SQLException {
+			Review review = new Review(rs.getInt("reviewId"), rs.getString("email"), rs.getInt("loanId"), rs.getInt("rating"),rs.getString("feedback")
+					,rs.getInt("userId"));
+			return review;
+		}
+	}
+	
 	class ReasonMapper implements RowMapper<reason> {
 		@Override
 		public reason mapRow(ResultSet rs, int rowNum) throws SQLException {
 			
-			reason rea=null;
-			
-			String sql="select * from usermodel";
-			List<UserModel> list=jdbcTemplate.query(sql, new UserModelMapper());
-			for(UserModel userModel: list)
-			{
-				if(userModel.getUserId()==rs.getInt("adminId"))
-				{
-					 rea = new reason(rs.getInt("loanId"), rs.getString("reason"), rs.getInt("adminId"), rs.getString("date"),userModel.getEmail());
-					
-				}
-			}
+						
+		reason rea = new reason(rs.getInt("loanId"), rs.getString("reason"), rs.getInt("adminId"), rs.getString("date"),rs.getString("email"));
+							
 			
 			return rea;
 			
@@ -813,9 +815,16 @@ public class Repository {
 
 	public void addReason(reason pro) {
 		
-		String sql="insert into reason(loanId,reason,adminId) values(:loanId,:reason,:adminId)";
+		List<UserModel> list=getUser(String.valueOf(pro.getAdminId()));
+		String email="";
+		for(UserModel model: list)
+		{
+			email=model.getEmail();
+		}
+		
+		String sql="insert into reason(loanId,reason,adminId,email) values(:loanId,:reason,:adminId,:email)";
 		SqlParameterSource parameterSource=new MapSqlParameterSource("loanId",pro.getLoanId())
-				.addValue("reason", pro.getReason()).addValue("adminId", pro.getAdminId());
+				.addValue("reason", pro.getReason()).addValue("adminId", pro.getAdminId()).addValue("email", email);
 		jdbcTemplate.update(sql, parameterSource);
 		
 		String sql2="update loanmodel set status='Rejected' where loanId=:loanId";
@@ -844,7 +853,7 @@ public class Repository {
 
 	public List<UserModel> getAllUser() {
 	
-		String sql="select * from usermodel";
+		String sql="select * from usermodel order by userId";
 		List<UserModel> list=jdbcTemplate.query(sql, new UserModelMapper());
 		return list;
 	}
@@ -853,7 +862,7 @@ public class Repository {
 	{
 		float emi=0;
 		emi=(float) (amount*rate*Math.pow((1+rate), months)/(Math.pow((1+rate), months)-1));
-		return emi;
+		return Math.round(emi);
 	}
 
 	public void generateSchedule(String loanId) {
@@ -902,16 +911,144 @@ public class Repository {
 
 	public List<repayment> getSchedule(String loanId) {
 		
+	
+		
 		String sql="select * from repayment where loanId=:loanId order by installmentNo";
 		SqlParameterSource parameterSource=new MapSqlParameterSource("loanId",Integer.parseInt(loanId));
 		List<repayment> list=jdbcTemplate.query(sql, parameterSource,new RepaymentMapper());
 		
-		for(repayment repay: list)
+		
+		SimpleDateFormat formats = new SimpleDateFormat("dd-MM-yyyy");
+		
+		Date date=new Date();
+		String currentDate=formats.format(date);
+		
+		String currDate="28-03-2022";
+		
+//		int count=0;
+		
+		float totalAmount=0;
+		float totalAmountPaid=0;
+		for(repayment repays: list)
 		{
-			System.out.println(dayDiff(repay.getDueDate(), "21-03-2022"));
+			totalAmount+=Float.parseFloat(repays.getEmi());
+			if(repays.getAmountPaid()!=null)
+			{
+				totalAmountPaid+=Float.parseFloat(repays.getAmountPaid());
+			}
+		}
+		int totalMonths=list.size();
+		
+		float prevEMI=0;
+		
+		
+		for(int i=0;i<list.size()-1;i++)
+		{
+			if(list.get(i).getAmountPaid()==null)
+			{
+				int dayDiff= dayDiff(list.get(i).getDueDate(), currDate);
+				
+				
+				if(dayDiff>0)
+				{
+					
+					if(dayDiff(list.get(i+1).getDueDate(), currDate)<0)
+					{
+						float currEMI=fineEMI(dayDiff, Float.parseFloat(list.get(i).getEmi()));
+						prevEMI=currEMI;
+						System.out.println("EMI No "+list.get(i).getInstallmentNo()+" Rs "+currEMI);
+						System.out.println("dayDiff is "+dayDiff);
+						float fine=currEMI-Float.parseFloat(list.get(i).getEmi());
+						
+						String sql2="update repayment set emi=:emi,fine=:fine,total=:total where loanId=:loanId and installmentNo=:installmentNo";
+						SqlParameterSource  parameterSource2=new MapSqlParameterSource("emi",list.get(i).getEmi())
+								.addValue("fine", String.valueOf(fine)).addValue("total", String.valueOf(currEMI))
+								.addValue("loanId", list.get(i).getLoanId()).addValue("installmentNo", list.get(i).getInstallmentNo());
+						jdbcTemplate.update(sql2, parameterSource2);
+						
+						
+						
+//						list.get(i).setTotal(String.valueOf(currEMI));
+//						list.get(i).setFine(String.valueOf(fine));
+					}
+					else if(dayDiff(list.get(i+1).getDueDate(), currDate)==0)
+					{
+						float newEMI=0;
+						
+						if(i>0)
+						{
+						 newEMI=overFineEMI(Float.parseFloat(list.get(i-1).getTotal()), totalAmount-totalAmountPaid, totalMonths-list.get(i).getInstallmentNo());
+						System.out.println("new EMI is "+newEMI);
+						}
+						else if(i==0)
+						{
+							newEMI=overFineEMI(Float.parseFloat(list.get(0).getTotal()), totalAmount-totalAmountPaid, totalMonths-list.get(i).getInstallmentNo());
+							System.out.println("new EMI is "+newEMI);
+						}
+						System.out.println("EMI No "+list.get(i).getInstallmentNo()+" Rs "+newEMI);
+                        float fine=newEMI-Float.parseFloat(list.get(i).getEmi());
+                        
+                        String sql2="update repayment set emi=:emi,fine=:fine,total=:total where loanId=:loanId and installmentNo >:installmentNo";
+    					SqlParameterSource  parameterSource2=new MapSqlParameterSource("emi",String.valueOf(newEMI))
+    							.addValue("fine", "0").addValue("total", String.valueOf(newEMI))
+    							.addValue("loanId", list.get(i).getLoanId()).addValue("installmentNo", list.get(i).getInstallmentNo());
+    					jdbcTemplate.update(sql2, parameterSource2);
+    					
+    					String sql3="update repayment set amountPaid='0.0' where loanId=:loanId and installmentNo=:installmentNo";
+    					SqlParameterSource parameterSource3=new MapSqlParameterSource("loanId",list.get(i).getLoanId())
+    							.addValue("installmentNo", list.get(i).getInstallmentNo());
+    					jdbcTemplate.update(sql3, parameterSource3);
+    					
+    					
+    				
+						
+//						list.get(i).setTotal(String.valueOf(newEMI));
+//						list.get(i).setFine(String.valueOf(fine));
+						
+					}
+				}
+				
+				
+				
+			}
 		}
 		
-		return list;
+		
+		if(!list.isEmpty())
+		{
+			
+		
+		
+		int fullSize=list.size();
+		
+		if(list.get(fullSize-2).getAmountPaid()!=null)
+		{
+			int dayDiff= dayDiff(list.get(fullSize-1).getDueDate(), currDate);
+			
+			float currEMI=fineEMI(dayDiff, Float.parseFloat(list.get(fullSize-1).getEmi()));
+			
+			System.out.println("EMI No "+list.get(fullSize-1).getInstallmentNo()+" Rs "+currEMI);
+			System.out.println("dayDiff is "+dayDiff);
+			float fine=currEMI-Float.parseFloat(list.get(fullSize-1).getEmi());
+			
+			String sql2="update repayment set emi=:emi,fine=:fine,total=:total where loanId=:loanId and installmentNo=:installmentNo";
+			SqlParameterSource  parameterSource2=new MapSqlParameterSource("emi",list.get(fullSize-1).getEmi())
+					.addValue("fine", String.valueOf(fine)).addValue("total", String.valueOf(currEMI))
+					.addValue("loanId", list.get(fullSize-1).getLoanId()).addValue("installmentNo", list.get(fullSize-1).getInstallmentNo());
+			jdbcTemplate.update(sql2, parameterSource2);
+			
+		}
+		
+		}
+		
+		
+		
+		
+		
+		List<repayment> lists=jdbcTemplate.query(sql, parameterSource,new RepaymentMapper());
+		
+		
+		return lists;
 		
 	}
 
@@ -953,7 +1090,155 @@ public class Repository {
 		float rate=(float) (0.04/30);
 		float extra=(float) (rate*emi*diff);
 	//	float newBalance=balance+extra;
-		return emi+extra;
+		return Math.round(emi+extra);
+	}
+	
+	static float overFineEMI(float emi, float balance, int remMonths)
+	{
+		return Math.round((balance+emi)/remMonths) ;
+	}
+
+	public void deleteSchedule(String loanId) {
+		
+		String sql="delete from repayment where loanId=:loanId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("loanId",Integer.parseInt(loanId));
+		jdbcTemplate.update(sql, parameterSource);
+		
+		String sql2="update loanmodel set status='In Process' where loanId=:loanId";
+		jdbcTemplate.update(sql2, parameterSource);
+		
+	}
+
+	public void editSchedule(repayment repay, String loanId) {
+		
+		String sql="update repayment set amountPaid=:amountPaid, paidDate=:paidDate where loanId=:loanId and installmentNo=:installmentNo";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("amountPaid",repay.getAmountPaid())
+				.addValue("paidDate", repay.getPaidDate()).addValue("loanId", Integer.parseInt(loanId))
+				.addValue("installmentNo", repay.getInstallmentNo());
+		jdbcTemplate.update(sql, parameterSource);
+		
+	}
+
+	public void updateSchedule() {
+		String sql="select * from loanmodel where status='Approved'";
+		List<LoanApplicantModel> list=jdbcTemplate.query(sql, new LoanModelMapper());
+		ArrayList<Integer> loanList=new ArrayList<Integer>();
+		
+		for(LoanApplicantModel applicantModel: list)
+		{
+			loanList.add(applicantModel.getLoanId());
+		}
+		
+		for(int i=0;i<loanList.size();i++)
+		{
+			getSchedule(String.valueOf(loanList.get(i)));
+		}
+		
+	}
+
+	public void addReview(Review review) {
+		
+		String sql="insert into review(userId,email,loanId,rating,feedback) values(:userId,:email,:loanId,:rating,:feedback)";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("userId",review.getUserId())
+				.addValue("email", review.getEmail()).addValue("loanId", review.getLoanId())
+				.addValue("rating", review.getRating()).addValue("feedback", review.getFeedback());
+		jdbcTemplate.update(sql, parameterSource);
+		
+	}
+
+	public List<Review> getReview(String userId) {
+		
+		String sql="select * from review where userId=:userId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("userId",Integer.parseInt(userId));
+		List<Review> list=jdbcTemplate.query(sql, parameterSource, new ReviewMapper());
+		return list;
+	}
+
+	public void editReview(Review review) {
+		
+		String sql="update review set rating=:rating,feedback=:feedback where reviewId=:reviewId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("rating",review.getRating())
+				.addValue("feedback", review.getFeedback()).addValue("reviewId", review.getReviewId());
+		jdbcTemplate.update(sql, parameterSource);
+		
+	}
+
+	public void deleteReview(String reviewId) {
+		
+		String sql="delete from review where reviewId=:reviewId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("reviewId",Integer.parseInt(reviewId));
+		jdbcTemplate.update(sql, parameterSource);
+		
+	}
+
+	public List<Review> getAllReview() {
+		
+		String sql="select * from review";
+		List<Review> list=jdbcTemplate.query(sql, new ReviewMapper());
+		return list;
+	}
+
+	public void deleteThisUser(String userId) {
+		
+		String sql="select * from usermodel where userId=:userId";
+		SqlParameterSource parameterSource=new MapSqlParameterSource("userId",Integer.parseInt(userId));
+		List<UserModel> list=jdbcTemplate.query(sql, parameterSource, new UserModelMapper());
+		String userRole="";
+		
+		System.out.println("Reach here");
+		
+		for(UserModel model: list)
+		{
+			userRole=model.getUserRole();
+		}
+		
+		System.out.println("role is "+userRole);
+		
+		if(userRole.equals("User"))
+		{
+			List<LoanApplicantModel> lists=getLoans(userId);
+			if(!lists.isEmpty())
+			{
+				ArrayList<Integer> loanList=new ArrayList<Integer>();
+				for(LoanApplicantModel applicantModel: lists)
+				{
+					loanList.add(applicantModel.getLoanId());
+				}
+				
+				for(int i=0;i<loanList.size();i++)
+				{
+					deleteSchedule(String.valueOf(loanList.get(i)));
+					deleteLoan(String.valueOf(loanList.get(i)));
+					String sql2="delete from reason where loanId=:loanId";
+					SqlParameterSource parameterSource2=new MapSqlParameterSource("loanId",loanList.get(i));
+					jdbcTemplate.update(sql2, parameterSource2);
+				}
+				
+			}
+			
+			deleteUser(userId);
+			
+			String sql3="delete from review where userId=:userId";
+			String sql4="delete from usermodel where userId=:userId";
+			
+			jdbcTemplate.update(sql3, parameterSource);
+			jdbcTemplate.update(sql4, parameterSource);
+			
+			
+			
+		}
+		
+		else if(userRole.equals("Admin"))
+		{
+			System.out.println("reach inside");
+			
+			String sql5="delete from usermodel where userId=:userId";
+			jdbcTemplate.update(sql5, parameterSource);
+			
+//			String sql6="update reason set adminId=0 where adminId=:userId";
+//			jdbcTemplate.update(sql6, parameterSource);
+		}
+		
 	}
 	
 	
