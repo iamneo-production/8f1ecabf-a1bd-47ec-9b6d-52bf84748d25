@@ -1,0 +1,544 @@
+<app-customerheader></app-customerheader>
+
+<!-- <div class="row">
+  <div class="col-md-10"></div>
+  <div class="col-md-2">
+    <label for="changeTheme" style="text-align: center;" class="form-label">Change Color</label>
+    <select class="form-select" id="changeTheme" style="width: 80%;" aria-label="Default select example" #changeTheme (change)="selectChange(changeTheme.value)">
+      <option value="light" selected>Light</option>
+      <option value="dark">Dark</option>
+    </select>
+  </div>
+</div> -->
+<div id="firstinfo" style="text-align: center;">
+ <br>
+  <div style="text-align: left; margin-left: 1%;">
+    <em class="fas fa-bars fa-lg" style="cursor: pointer; color: darkslateblue;" (click)="showAll()"></em>
+  </div>
+  
+
+  <div style="text-align: left; margin-top: 1%;margin-left: 1%; display: none;" id="smallBar">
+    <div class="row">
+     
+        <strong style="cursor: pointer;color: blue;" (click)="openReview()" id="myreview"><u>My Reviews</u></strong>
+
+        <strong style="cursor: pointer;color: blue;" (click)="changePassword()" id="changepassword"><u>Change Password</u></strong>
+
+    </div>
+    
+  </div>
+
+    <b style="font-size: larger;font-family: Verdana, Geneva, Tahoma, sans-serif;">Profile Information <i *ngIf="prolength>0" class="fas fa-edit fa-lg" id="editbtn" style="color: darkslateblue;cursor: pointer;margin-left: 1%;" (click)="editform()"></i>
+      <i *ngIf="prolength>0" id="deletebtn" style="color: red; cursor: pointer; margin-left: 1%;" class="fas fa-trash-alt fa-lg" (click)="deletePro()"></i></b>
+    
+    <br>
+    <br>
+    <br>
+
+    <div id="mainBody" style="height: 350px;">
+
+    <div *ngIf="prolength==0">
+
+    <div>
+      <div class="row">
+        <div class="col-md-5"></div>
+        <div class="col-md-2">
+          <div class="alert alert-light"  role="alert" style="cursor: pointer; background-color: darkslateblue; border-radius: 12px;" (click)="openForm()">
+             <b style="color: white;"><i class="fa fa-user-plus"></i> Add Profile</b>
+          </div>
+        </div>
+        <div class="col-md-5"></div>
+      </div>
+    </div>
+
+    <div id="addprofileinfo" style="display: none;">
+    <form #profileForm="ngForm">
+    <div *ngFor="let value of profileArray">
+    <div class="row">
+        <div class="col-md-2" style="margin-left: 4.5%;"></div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input name="name" type="text" class="form-control" style="text-align: center;" ngModel="{{value.username}}" id="name" aria-describedby="emailHelp"   #name="ngModel" required>
+              </div>
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="name.invalid && (name.touched || name.dirty)">
+                    <p *ngIf="name.errors?.['required']" style="color: red; text-align: left;">Name required</p>
+                    <p *ngIf="name.errors?.['pattern']" style="color: red;">Pattern does not match</p>
+                </div>  
+            </div>
+              
+              <div class="mb-3">
+                <label for="mobileNo" class="form-label">Mobile Number</label>
+                <input name="mobileNo" type="text" class="form-control" style="text-align: center;" ngModel="{{value.number}}" id="mobileNo" aria-describedby="emailHelp" maxlength="10" minlength="10"  
+                pattern = "[0-9]{1,10}" (input)="checkNumber(mobileNo.value)"   #mobileNo="ngModel" required>
+              </div>
+              
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="mobileNo.invalid && (mobileNo.touched || mobileNo.dirty)">
+                    <p *ngIf="mobileNo.errors?.['required']" style="color: red;text-align: left; ">Number required</p>
+                    <p *ngIf="mobileNo.errors?.['pattern']" style="color: red;text-align: left;">Enter only number</p>
+                </div>  
+
+                <div *ngIf="mobileNo.valid && numberExist==true">
+                  <p style="color: red; text-align: left;">Number Already Used!</p>
+              </div>
+
+            </div>
+
+           
+              
+        </div>
+        <!-- <div class="col-md-1"></div> -->
+        <div class="col-md-3" style="margin-left: 7%;">
+            <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <input name="address" type="text" style="text-align: center;" class="form-control" ngModel id="address" aria-describedby="emailHelp"   #address="ngModel" required>
+              </div>
+
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="address.invalid && (address.touched || address.dirty)">
+                    <p *ngIf="address.errors?.['required']" style="color: red;text-align: left;">Address required</p>
+                    <!-- <p *ngIf="address.errors?.['pattern']" style="color: red;">Enter only number</p> -->
+                </div>  
+            </div>
+
+      
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" style="text-align: center;" ngModel="{{value.email}}" id="email" aria-describedby="emailHelp" (input)="checkEmail(email.value)" 
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$"  #email="ngModel" required>
+              </div>
+
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="email.invalid && (email.touched || email.dirty)">
+                    <p *ngIf="email.errors?.['required']" style="color: red;text-align: left;">Email required</p>
+                    <p *ngIf="email.errors?.['pattern']" style="color: red;text-align: left;">Incorrect Email</p>
+                </div> 
+                
+                <div *ngIf="email.valid && emailExist==true">
+                  <p style="color: red; text-align: left;">Email Already Used!</p>
+              </div>
+                
+            </div>
+
+              
+             
+
+        </div>
+
+    </div>
+
+     <br>
+
+     <div *ngIf="emailExist==false && numberExist==false">
+
+     <button class="btn" id="saveEdit" style="background-color: darkslateblue;color: white;border-radius: 0.25rem;margin: 0.25rem 0.125rem;border-radius: 12px;width: 15%; margin-right: 1%;" [disabled]="!profileForm.valid" (click)="addProfile(profileForm)">Save</button>    
+
+    </div>
+
+
+    <div *ngIf="emailExist==true || numberExist==true">
+
+      <button class="btn" id="saveEdits" style="background-color: darkslateblue;color: white;border-radius: 0.25rem;margin: 0.25rem 0.125rem;border-radius: 12px;width: 15%; margin-right: 1%;" disabled>Save</button>    
+
+    </div>
+
+    </div>
+
+  </form>
+
+ </div>
+
+</div>
+
+
+<div *ngIf="prolength>0">
+
+
+  <form #profilesForm="ngForm">
+    <div *ngFor="let value of proArray">
+    <div class="row">
+        <div class="col-md-2" style="margin-left: 4.5%;"></div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input name="name" type="text" class="form-control" style="text-align: center;" ngModel="{{value.name}}" id="name" aria-describedby="emailHelp" [disabled]="editoption==false"  #name="ngModel" required>
+              </div>
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="name.invalid && (name.touched || name.dirty)">
+                    <p *ngIf="name.errors?.['required']" style="color: red; text-align: left;">Name required</p>
+                    <p *ngIf="name.errors?.['pattern']" style="color: red;">Pattern does not match</p>
+                </div>  
+            </div>
+              
+              <div class="mb-3">
+                <label for="mobileNo" class="form-label">Mobile Number</label>
+                <input name="mobileNo" type="text" class="form-control" style="text-align: center;" ngModel="{{value.number}}" id="mobileNo" aria-describedby="emailHelp" maxlength="10" minlength="10"  
+                pattern = "[0-9]{1,10}" (input)="checkNumber(mobileNo.value)" [disabled]="editoption==false"   #mobileNo="ngModel" required>
+              </div>
+              
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="mobileNo.invalid && (mobileNo.touched || mobileNo.dirty)">
+                    <p *ngIf="mobileNo.errors?.['required']" style="color: red;text-align: left; ">Number required</p>
+                    <p *ngIf="mobileNo.errors?.['pattern']" style="color: red;text-align: left;">Enter only number</p>
+                </div>  
+
+                <div *ngIf="mobileNo.valid && numberExist==true">
+                  <p style="color: red; text-align: left;">Number Already Used!</p>
+              </div>
+
+            </div>
+
+           
+              
+        </div>
+        <!-- <div class="col-md-1"></div> -->
+        <div class="col-md-3" style="margin-left: 7%;">
+            <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <input name="address" type="text" style="text-align: center;" class="form-control" ngModel="{{value.address}}" id="address" aria-describedby="emailHelp" [disabled]="editoption==false"  #address="ngModel" required>
+              </div>
+
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="address.invalid && (address.touched || address.dirty)">
+                    <p *ngIf="address.errors?.['required']" style="color: red;text-align: left;">Address required</p>
+                    <!-- <p *ngIf="address.errors?.['pattern']" style="color: red;">Enter only number</p> -->
+                </div>  
+            </div>
+
+      
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input name="email" type="email" class="form-control" style="text-align: center;" ngModel="{{value.email}}" id="email" aria-describedby="emailHelp" (input)="checkEmail(email.value)" 
+                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" [disabled]="editoption==false"  #email="ngModel" required>
+              </div>
+
+              <div style="height: 32px;margin-top: -4%;">
+                <div *ngIf="email.invalid && (email.touched || email.dirty)">
+                    <p *ngIf="email.errors?.['required']" style="color: red;text-align: left;">Email required</p>
+                    <p *ngIf="email.errors?.['pattern']" style="color: red;text-align: left;">Incorrect Email</p>
+                </div> 
+                
+                <div *ngIf="email.valid && emailExist==true">
+                  <p style="color: red; text-align: left;">Email Already Used!</p>
+              </div>
+                
+            </div>
+
+              
+             
+
+        </div>
+
+    </div>
+
+     <br>
+
+     <div *ngIf="editoption==true">
+
+     <div *ngIf="emailExist==false && numberExist==false">
+
+     <button class="btn" id="saveEdit" style="background-color: darkslateblue;color: white;border-radius: 0.25rem;margin: 0.25rem 0.125rem;border-radius: 12px;width: 15%; margin-right: 1%;" [disabled]="!profilesForm.valid" (click)="updateProfile(profilesForm)">Save</button>    
+
+    </div>
+
+
+    <div *ngIf="emailExist==true || numberExist==true">
+
+      <button class="btn" id="saveEdits" style="background-color: darkslateblue;color: white;border-radius: 0.25rem;margin: 0.25rem 0.125rem;border-radius: 12px;width: 15%; margin-right: 1%;" disabled>Save</button>    
+
+    </div>
+
+  </div>
+
+    </div>
+
+  </form>
+  
+
+</div>
+
+
+
+</div>
+
+
+
+<!-- <div>
+
+  <div class="mb-3">
+    <label for="loanId" class="form-label">Loan Id</label>
+    <input type="text" class="form-control" id="loanId" aria-describedby="emailHelp" disabled>
+  </div>
+
+  <br>
+
+  <div class="mb-3">
+    <label for="monthlyemi" class="form-label">Monthly emi</label>
+    <input type="text" class="form-control" id="monthlyemi" aria-describedby="emailHelp" [disabled]="editoption==false">
+  </div>
+
+</div> -->
+
+
+
+
+</div>
+
+
+
+
+<button type="button" id="deleteLaunch" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal" style="display: none;">
+  Launch demo modal
+</button>
+
+<!-- Modal HTML -->
+<div id="myModal" class="modal fade">
+	<div class="modal-dialog modal-confirm">
+		<div class="modal-content">
+			<div class="modal-header flex-column">
+				<div class="icon-box">
+					<i class="material-icons">&#xE5CD;</i>
+				</div>						
+				<h4 class="modal-title w-100">Are you sure?</h4>	
+                <!-- <button type="button" class="close" data-bs-dismiss="modal" aria-hidden="true"></button> -->
+                <!-- <i class="fa fa-times fa-lg" id="closeClose" style="color: red;" data-bs-dismiss="modal" aria-hidden="true"></i> -->
+       <!-- <input ngModel class="catchIt" type="text" id="catchIt" style="display: none;" #catchIt="ngModel"> -->
+			</div>
+			<div class="modal-body">
+				<p>Do you really want to delete this Profile? This process cannot be undone.</p>
+			</div>
+			<div class="modal-footer justify-content-center">
+				<button type="button" class="btn btn-secondary" id="deletethisloanfast" data-bs-dismiss="modal">Cancel</button>
+				<button type="button" class="btn btn-danger" (click)="deleteprofile()">Delete</button>
+			</div>
+		</div>
+	</div>
+</div>   
+
+<button type="button" id="onLaunch" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myMainModal" style="display: none;">
+  Launch demo modal
+</button>
+
+<!-- Modal HTML -->
+<div id="myMainModal" class="modal fade">
+  <div class="modal-dialog modal-confirm">
+    <div class="modal-content" >
+      <div class="modal-header flex-column" style="margin-top: -8%;">
+         
+          <h4>Rate Your Experience</h4>
+          
+          
+
+          <div class="rate" style="margin-top: 3%;">
+              <input type="radio" id="star5" name="rate" value="5" (click)="countStar(5)" />
+              <label for="star5" title="text">5 stars</label>
+              <input type="radio" id="star4" name="rate" value="4" (click)="countStar(4)" />
+              <label for="star4" title="text">4 stars</label>
+              <input type="radio" id="star3" name="rate" value="3" (click)="countStar(3)" />
+              <label for="star3" title="text">3 stars</label>
+              <input type="radio" id="star2" name="rate" value="2" (click)="countStar(2)" />
+              <label for="star2" title="text">2 stars</label>
+              <input type="radio" id="star1" name="rate" value="1" (click)="countStar(1)" />
+              <label for="star1" title="text">1 star</label>
+            </div>
+          
+        <!-- <h5 class="modal-title w-100">How was your Experience?</h5>	 -->
+               
+      </div>
+      <div class="modal-body">
+        <!-- <p>Do you really want to delete this Repayment Schedule? This process cannot be undone.</p> -->
+       <div *ngFor="let param of rowArray">
+        <div class="mb-3">
+          <label for="name" class="form-label" style="margin-right: 55%;">*Share your experience</label>
+          <textarea class="form-control" name="name" ngModel="{{param.feedback}}" id="name" rows="2" #name="ngModel" required></textarea>
+        </div>
+
+        <div style="height: 16px;margin-top: -4%;">
+          <div *ngIf="name.invalid && (name.touched || name.dirty)">
+              <p *ngIf="name.errors?.['required']" style="color: red; text-align: left;">*Required</p>
+          </div>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-secondary" id="deletethisloanfaster" data-bs-target="#staticBackdrop" data-bs-toggle="modal" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" [disabled]="!name.valid" (click)="submitReview(name.value,param.reviewId)">Submit</button>
+          <button type="button" class="btn btn-primary" id="exitModal" style="display: none;" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+
+      </div>
+      <!-- <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" id="deletethisloanfaster" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success"   >Submit</button>
+      </div> -->
+    </div>
+  </div>
+</div>  
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" id="reviewLaunch" style="display: none;" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+  Launch static backdrop modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="staticBackdropLabel">My Reviews</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <div *ngIf="reviewLength==0" style="text-align: center; font-size: large;">
+             <Strong >No reviews available</Strong>
+        </div>
+       
+        <div *ngIf="reviewLength>0" style="text-align: left;">
+
+
+              <div class="row" *ngFor="let value of reviewArray ; let i=index" class="alert alert-info" role="alert">
+            
+                <div class="row">
+                  <div class="col-md-9">
+                    <strong>{{value.feedback}}</strong>
+                  </div>
+        
+                  
+                  <div class="col-md-3">
+      
+                    <button class="btn btn-primary" style="margin-left: 21%;"
+                    data-bs-target="#myMainModal" data-bs-toggle="modal" data-bs-dismiss="modal" (click)="editReview(value.reviewId)">Edit</button>
+                    <button class="btn btn-danger" style="margin-left: 3%;" (click)="deleteReview(value.reviewId)">Delete</button>
+        
+                  </div>
+                </div>
+        
+                <div class="row" style="margin-top: -1%;">
+        
+                  <div class="col-md-6">
+                   
+                    
+                    <em *ngFor='let in of counter(value.rating) ;let i = index' class="fas fa-star fa-2x" style="color: gold;"></em>
+                   
+        
+                  </div>
+                    
+        
+                </div>
+        
+              </div>
+            
+        
+            
+        
+        
+        </div>
+        
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="closeStaticModal" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" id="openPass" style="display: none;" data-bs-toggle="modal" data-bs-target="#smallModal">
+  Launch static backdrop modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="smallModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="smallModalLabel">Change Password</h4>
+        <button type="button" class="btn-close" id="closePassword" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        
+       
+
+        <div id="secondshow" style="margin-top: 2%;">
+          <form #passForm="ngForm">
+                   <div class="input-group mb-3">
+                       <div class="input-group-prepend">
+                         <span class="input-group-text" id="basic-addon1" style="height:100%"> <i class="fas fa-key" style="color: darkslateblue;"></i></span>
+                       </div>
+                       <input  name="password" type="password" id="password" class="form-control" placeholder="Password*" aria-label="Password" aria-describedby="basic-addon1" ngModel="{{empty}}" #password="ngModel" required pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,15}$">
+                       <div class="input-group-append">
+                           <span class="input-group-text" style="height: 100%;"><i class="fa fa-eye" style="color:darkslateblue;" aria-hidden="true" id="openeye0"  (click)="showeye(0)"></i>
+                               <i class="fas fa-eye-slash" id="closeeye0" style="display: none;color: darkslateblue;"></i></span>
+                       
+                           </div>
+                           <div id="pgla" style="margin-left: 3%;margin-top: 2%;">
+                             <i class="fas fa-info-circle fa-lg" style="color: darkslateblue;cursor: pointer;" data-toggle="tooltip" data-placement="top" title="Password must be of 8-15 in length and must contain 
+   atleast one uppercase, one lower case,
+   one number and a special character"></i>
+                           </div>
+                       </div>
+                       <div style="height: 32px;margin-top: -4%;">
+                           <div *ngIf="password.invalid && (password.touched || password.dirty)">
+                               <p *ngIf="password.errors?.['required']" style="color: red;">Password required</p>
+                               <p *ngIf="password.errors?.['pattern']" style="color: red;">Pattern doesnot match</p>
+                           </div>  
+                       </div>
+   
+                       <div class="input-group mb-3">
+                           <div class="input-group-prepend">
+                             <span class="input-group-text" id="basic-addon1" style="height:100%"> <i class="fas fa-key" style="color: darkslateblue;"></i></span>
+                           </div>
+                           <input   name="confirmPassword" type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password*" aria-label="Password" aria-describedby="basic-addon1" pattern="{{password.value}}" ngModel="{{empty}}" #confirmPassword="ngModel" required>
+                           <div class="input-group-append">
+                               <span class="input-group-text" style="height: 100%;"><i class="fa fa-eye" style="color: darkslateblue;" aria-hidden="true" id="openeye1"  (click)="showeye(1)"></i>
+                                   <i class="fas fa-eye-slash" id="closeeye1" style="display: none;color: darkslateblue;"></i></span>
+                           </div>
+                                   <div id="pgla" style="margin-left: 3%;margin-top: 2%;">
+                                      <i class="fas fa-info-circle fa-lg" style="color: darkslateblue;cursor: pointer;"data-toggle="tooltip" data-placement="top" title="Password must be of 8-15 in length and must contain
+   atleast one uppercase, one lower case,
+   one number and a special character"></i>
+                                  </div>
+                           </div>
+   
+                           <div style="height: 32px;margin-top: -4%;">
+                               <div *ngIf="confirmPassword.invalid && (confirmPassword.touched || confirmPassword.dirty)">
+                                   <p *ngIf="confirmPassword.errors?.['required']" style="color: red;">Password required</p>
+                                   <p *ngIf="confirmPassword.errors?.['pattern']" style="color: red;">Password must be same</p>
+                               </div>  
+                           </div>
+
+
+                           <button class="btn" id="submitPasswordButton" style="background-color: darkslateblue;color: white;border-radius: 0.25rem;margin: 0.25rem 0.125rem;margin-left: 41%;" [disabled]="!passForm.valid" (click)="submitPassword(password.value)">Submit</button>
+                           <input class="btn btn-primary" id="resetForm" type="reset" style="display: none;" value="Reset">
+                           <br>
+
+                           
+          
+                            <div class="alert alert-success" id="updateSuccess"  style="text-align: center; height: 48px;margin-top: 1%; display: none;" role="alert">
+                              Password updated Successfully!
+                            </div>
+                          
+
+                       </form>
+   
+
+               </div>
+
+
+      </div>
+      <!-- <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Understood</button>
+      </div> -->
+    </div>
+  </div>
+</div>
+

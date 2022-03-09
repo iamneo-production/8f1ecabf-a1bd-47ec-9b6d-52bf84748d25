@@ -1,0 +1,181 @@
+<app-adminheader></app-adminheader>
+<div id="background">
+
+    <br>
+    
+
+    <div class="row">
+        <div class="col-md-4">
+
+        </div>
+        <div class="col-md-5">
+        
+            <div class="card" style="width: 36rem;">
+             <div class="card-body">
+                 
+                  <!-- <h4 class="card-title"><i class="fas fa-user-plus fa-lg" style="color: royalblue;margin-left: 36%;"></i><i class="fas fa-users fa-lg" style="color: royalblue; margin-left: 3%;"></i>
+                    <i class="fas fa-comments-alt fa-lg" style="color: royalblue; margin-left: 3%;"></i></h4> -->
+                    <div style="text-align: center;font-size: 18px; background-color:royalblue;width: 106.2%;
+                margin-left: -3.1%;margin-top: -4%;height: 52px;">
+                
+                    <strong style="color: white;">
+                        <i class="fas fa-user-plus fa-lg" id="onerequest" style="color: white; margin-right: 8%; cursor: pointer;margin-top: 3%;" (click)="showRequest()"></i>
+                        <i class="fas fa-users fa-lg" id="twouser" style="color: white; cursor: pointer;" (click)="showUser()"></i>
+                        <i class="fas fa-comments-alt fa-lg" id="threefeedback" style="color: white; margin-left: 8%; cursor: pointer;" (click)="showFeedback()"></i>
+                    </strong>
+                </div>
+                
+                    <div id="requestShow">
+                        <br>
+                    <h4><strong>Request</strong></h4>
+                  <div *ngIf="requestLength==0" style="text-align: center;">
+                    <br>
+                       <strong>No request yet!</strong>
+                  </div>
+                  <div *ngIf="requestLength>0">
+                   <div *ngFor="let value of requestArray" class="shadow-lg p-3 mb-5 bg-body rounded">
+                       <div class="row">
+                           <div class="col-md-2">
+                          <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" style="width: 60px;height: 60px;">
+                           </div>
+                           <div class="col-md-10">
+                             <p><b>{{value.email}}</b> sent you a admin request.</p>
+                             <button class="btn btn-primary" style="border-radius: 12px; width: 40%;" (click)="addAdmin(value.adminId)">Confirm</button>
+                             <button class="btn btn-secondary" style="margin-left: 2%;border-radius: 12px; width: 40%;" (click)="deleteAdmin(value.adminId)">Delete</button>
+
+                             
+                           </div>
+                       </div>
+                    </div>
+                 </div>
+                 
+                </div>
+
+                <div id="userShow" style="display: none;">
+                 
+                    <br>
+                    <h4><strong>All User</strong></h4>
+
+                    
+                    <table id="myTable" style="margin-top: 3%;">
+                        <thead>
+                        <tr>
+                            <th >Email</th>
+                            <th >Username</th>
+                            <th >Number</th>
+                            <th >Role</th>
+                            <th  ></th>
+                            
+                        </tr>
+                       </thead>
+                    
+                       <tbody>
+                        <tr class="rowClass"  *ngFor="let value of userArray ; let i=index" id="rowId{{i}}">
+                          <td>{{value.email}}</td>
+                          <td>{{value.username}}</td>
+                          <td>{{value.number}}</td>
+                          <td>{{value.userRole}}</td>
+                          <td ><i *ngIf="value.userId!=1" class="fas fa-trash-alt" style="color: red; cursor: pointer;" (click)="deleteUser(value.userId)"></i></td>
+                        </tr>
+                    </tbody>
+                    </table>
+                    
+
+                </div>
+
+                <div id="feedbackShow" style="display: none;">
+
+                    <br>
+                    <h4><strong>Reviews</strong></h4>
+
+                    <div *ngIf="reviewLength==0" style="text-align: center;">
+                        <br>
+                           <strong>No Reviews yet!</strong>
+                      </div>
+
+                      <div *ngIf="reviewLength>0">
+
+                        <div class="row" *ngFor="let value of reviewArray ; let i=index" class="alert alert-info" role="alert">
+            
+                            <div class="row">
+                              <div class="col-md-9">
+                                <strong>{{value.feedback}}</strong>
+                              </div>
+                    
+                              
+                              <div class="col-md-3">
+                  
+                                <button class="btn btn-danger" style="margin-left: 32%;" (click)="deleteReview(value.reviewId)">Delete</button>
+                    
+                              </div>
+                            </div>
+                    
+                            <div class="row" style="margin-top: -1%;">
+                    
+                              <div class="col-md-6">
+                               
+                                
+                                <em *ngFor='let in of counter(value.rating) ;let i = index' class="fas fa-star fa-2x" style="color: gold;"></em>
+                               
+                    
+                              </div>
+
+                              <div class="col-md-6" style="text-align: right;">
+
+                                <br>
+                                 <strong>({{value.email}})</strong>
+
+                              </div>
+                                
+                    
+                            </div>
+                    
+                          </div>
+
+                      </div>
+
+                </div>
+
+
+              </div>
+            </div>
+
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+</div>
+
+
+<button type="button" id="deleteLaunch" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal" style="display: none;">
+    Launch demo modal
+  </button>
+  
+  <!-- Modal HTML -->
+  <div id="myModal" class="modal fade">
+      <div class="modal-dialog modal-confirm">
+          <div class="modal-content">
+              <div class="modal-header flex-column">
+                  <div class="icon-box">
+                      <i class="material-icons">&#xE5CD;</i>
+                  </div>						
+                  <h4 class="modal-title w-100">Are you sure?</h4>	
+                  
+              </div>
+              <div class="modal-body">
+                  <p>Do you really want to delete this User? This process cannot be undone.</p>
+              </div>
+              <div class="modal-footer justify-content-center">
+                  <button type="button" class="btn btn-secondary" id="deletethisloanfast" data-bs-dismiss="modal">Cancel</button>
+                  <button type="button" class="btn btn-danger" (click)="deleteThisUser()">Delete</button>
+              </div>
+          </div>
+      </div>
+  </div>   
+
+
+
+
+
+
+
+
