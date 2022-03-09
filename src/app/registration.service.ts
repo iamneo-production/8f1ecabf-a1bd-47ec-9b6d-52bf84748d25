@@ -14,10 +14,7 @@ export class RegistrationService {
   public loginUserFromRemote(user: User):Observable<any>
   {
     console.log(user);
-    if(user.userType=="user")
-      return this._http.post<any>("http://localhost:8080/user/login",user);
-    else
-    return this._http.post<any>("http://localhost:8080/admin/login",user);
+    return this._http.post<any>("http://localhost:8080/login",user);
 
   }
 
