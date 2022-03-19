@@ -1,0 +1,88 @@
+
+
+<form [formGroup]="loginForm" (ngSubmit)="submitForm" #myForm="ngForm" >
+<div class="row">
+    <div class="col-sm-6">
+      <div class="card" >
+        <div class="card-body  text-center">
+          
+    <input type="text" required
+    placeholder="Enter Applicant Name" [(ngModel)]="loan1.name" name="name" class="form-control" formControlName="name">
+    <br>
+     <p   class="text-danger"  *ngIf="name && name.invalid && name.touched">Name is Required</p>
+        <br>
+    
+    
+    <input type="text" [(ngModel)]="loan1.address" placeholder="Enter Applicant Address" class="form-control" formControlName="address">
+    <br>
+    <p  class="text-danger" *ngIf="address && address.invalid && address.touched"> Address is Required</p>
+    <br>
+    <input type="text" [(ngModel)]="loan1.mobile"  placeholder="Enter Applicant Mobile number" class="form-control" formControlName="mobile">
+    <br>
+    <p  class="text-danger" *ngIf="mobile && mobile.invalid && mobile.touched">Mobile number Required</p>
+    <br>
+    <input type="text"  [(ngModel)]="loan1.email" placeholder="Enter Applicant Email ID" class="form-control" formControlName="email">
+      <br>    
+    <p  class="text-danger"  *ngIf="email && email.invalid && email.touched">Email  ID Required</p>
+    <br>
+    <input type="text" [(ngModel)]="loan1.aadhar" placeholder="Enter Applicant Aadhaar No" class="form-control" formControlName="Aadhaar">
+    <br>
+    <p class="text-danger" *ngIf="Aadhaar && Aadhaar.invalid && Aadhaar.touched">Aadhaar Required</p>
+    <br>
+
+
+
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          
+            <input type="text"  [(ngModel)]="loan1.pan" placeholder="Enter Applicant PAN no" class="form-control" formControlName="pan">
+            <br>
+            <p class="text-danger" *ngIf="pan && pan.invalid && pan.touched">PAN Number Required</p>
+            <br>
+            <input type="text" [(ngModel)]="loan1.salary"  placeholder="Enter Applicant Salary" class="form-control" formControlName="salary">
+            <br>
+            <p class="text-danger"  *ngIf="salary&& salary.invalid && salary.touched">Salary Details Required </p>
+            <br>
+            <input type="text" [(ngModel)]="loan1.amount"  placeholder="Enter Loan Amount Required" class="form-control"   formControlName="amount">
+            <br>
+            <p class="text-danger" *ngIf="amount && amount.invalid && amount.touched">Loan Amount Required</p>
+            <br>
+            <input type="text"  [(ngModel)]="loan1.reypaymentmonths"  placeholder="Enter Loan Repayment months" class="form-control"  formControlName="repaymentmonths">
+            <br>
+            <p class="text-danger" *ngIf="repaymentmonths && repaymentmonths.invalid && repaymentmonths.touched">Repayment Months Required</p>
+            <br>
+           
+        
+           
+        
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+
+  <div class="card">
+    <div class="card-body  text-center">
+         
+              
+          
+         
+     
+  
+  
+    <div class="mt-3">
+      <button type="submit" class="btn btn-primary" [disabled]="!myForm.form.valid"  (click)="submitForm()"  style="margin-right: 16px;">Apply Loan </button>
+     <!---<button type="submit" class="btn btn-primary"   style="margin-right:16px ;">Apply Loan</button>--> 
+    </div>
+     
+
+       
+    </div>
+  
+</div>
+
+</form> 
