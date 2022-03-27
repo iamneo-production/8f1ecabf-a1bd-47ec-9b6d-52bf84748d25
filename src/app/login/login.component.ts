@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { RegistrationService } from '../registration.service';
 import { User } from '../user';
 
@@ -12,7 +13,9 @@ export class LoginComponent implements OnInit {
 
   user:User= new User();
   exform!: FormGroup;
-  constructor(private loginuserservice: RegistrationService) { 
+  responsedata: any;
+
+  constructor(private loginuserservice: RegistrationService,private router:Router) { 
   }
 
   ngOnInit(): void {
@@ -36,12 +39,42 @@ export class LoginComponent implements OnInit {
      return this.exform.get('password');
    }
 
+   
+
    loginUser()
    {
-     console.log(this.user);
-     this.loginuserservice.loginUserFromRemote(this.user).subscribe(
-       data=>{alert("Login success")},
-       error=>alert("bad credentials"))
-     
+     this.loginuserservice.getType(this.user).subscribe({
+      next:(res:any)=>{
+        console.log(res);
+        if(res===null)
+        {
+          alert("register yourself");
+        }
+        else if(res.userType=="user")
+        {
+        this.loginuserservice.loginUserFromRemote(this.user).subscribe(
+          data=>{alert("Login success"),
+          localStorage.setItem('token',res.userType),
+          this.router.navigate(["user"])}
+        );
+    
+        
+        }
+        else if(res.userType=="admin")
+        {
+          this.loginuserservice.loginUserFromRemote(this.user).subscribe(
+            data=>{alert("Login success"),
+            localStorage.setItem('token',res.userType),
+            this.router.navigate(["admin"])}
+            
+        );
+        
+          }
+        }
+     });
+          
+          
    }
-}
+  }
+
+
